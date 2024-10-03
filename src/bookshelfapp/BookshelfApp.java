@@ -1,20 +1,37 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package bookshelfapp;
 
-/**
- *
- * @author student
- */
-public class BookshelfApp {
+import java.awt.CardLayout;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import panels.Login;
 
-    /**
-     * @param args the command line arguments
-     */
+public class BookshelfApp extends JFrame {
+    private CardLayout cardLayout;
+    private JPanel cardPanel;
+    
+    public BookshelfApp() {
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Bookshelf");
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (screenSize.width - 720) / 2;
+        int y = (screenSize.height - 480) / 2;
+        setBounds(x, y, 720, 480);
+        cardLayout = new CardLayout();
+        cardPanel = new JPanel(cardLayout);
+        //Thêm các panel ở đây
+        Login loginPanel = new Login(cardLayout, cardPanel);
+        cardPanel.add(loginPanel, "login");
+        add(cardPanel);
+        //Mặc định show login
+        cardLayout.show(cardPanel, "login");
+        
+    }
+    
     public static void main(String[] args) {
-        // TODO code application logic here
+        BookshelfApp app = new BookshelfApp();
+        app.setVisible(true);
     }
     
 }

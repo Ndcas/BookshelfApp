@@ -8,6 +8,9 @@ import controllers.exceptions.IllegalOrphanException;
 import controllers.exceptions.NonexistentEntityException;
 import controllers.exceptions.PreexistingEntityException;
 import java.io.Serializable;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
@@ -54,6 +57,9 @@ public class NguoiDungJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            //Hash mật khẩu
+            String matKhau = hash(nguoiDung.getMatKhau());
+            nguoiDung.setMatKhau(matKhau);
             Collection<NguoiDung> attachedNguoiDungCollection = new ArrayList<NguoiDung>();
             for (NguoiDung nguoiDungCollectionNguoiDungToAttach : nguoiDung.getNguoiDungCollection()) {
                 nguoiDungCollectionNguoiDungToAttach = em.getReference(nguoiDungCollectionNguoiDungToAttach.getClass(), nguoiDungCollectionNguoiDungToAttach.getTaiKhoan());
@@ -108,6 +114,9 @@ public class NguoiDungJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            //Hash mật khẩu
+            String matKhau = hash(nguoiDung.getMatKhau());
+            nguoiDung.setMatKhau(matKhau);
             NguoiDung persistentNguoiDung = em.find(NguoiDung.class, nguoiDung.getTaiKhoan());
             Collection<NguoiDung> nguoiDungCollectionOld = persistentNguoiDung.getNguoiDungCollection();
             Collection<NguoiDung> nguoiDungCollectionNew = nguoiDung.getNguoiDungCollection();
@@ -289,4 +298,29 @@ public class NguoiDungJpaController implements Serializable {
         }
     }
     
+    private String hash(String str) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] bytes = md.digest(str.getBytes(StandardCharsets.UTF_8));
+            BigInteger bi = new BigInteger(1, bytes);
+            StringBuilder result = new StringBuilder(bi.toString(16));
+            while (result.length() < 64) {
+                result.insert(0, '0');
+            }
+            return result.toString();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public NguoiDung login(String taiKhoan, String matKhau) {
+        matKhau = hash(matKhau);
+        NguoiDung result = findNguoiDung(taiKhoan);
+        if (result == null || !result.getMatKhau().equals(matKhau)) {
+            return null;
+        }
+        return result;
+    }
 }
